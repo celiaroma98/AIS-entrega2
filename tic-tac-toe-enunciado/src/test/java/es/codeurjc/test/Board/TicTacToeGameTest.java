@@ -46,21 +46,24 @@ public class TicTacToeGameTest {
 	
 	
 	
-
-		
 	
-	 @ParameterizedTest
+	@BeforeEach
+	public void setUp() {
+		 juego = new TicTacToeGame();
+	}
+	
+		
+	 @ParameterizedTest(name = "CasoPartida: {index}")
 	 @MethodSource("values")
 	public void TestGenerico(List<Jugada> jugadas) {
 		
-		 juego = new TicTacToeGame();
-			conexion1 = mock(Connection.class);
-			conexion2 = mock(Connection.class);
+		
+		conexion1 = mock(Connection.class);
+		conexion2 = mock(Connection.class);
 			
 		juego.addConnection(conexion1);
 		juego.addConnection(conexion2);
 		
-	
 		jugadores =  new CopyOnWriteArrayList<>();
 		
 		jugadores.add(new Player(0,"X","Celia"));	
@@ -77,8 +80,6 @@ public class TicTacToeGameTest {
 		
 		int turnosig = 1;
 		int turno = 0;
-
-		
 		
 				for (Jugada jugada:jugadas) {
 					if (turnosig==1){
@@ -87,51 +88,49 @@ public class TicTacToeGameTest {
 					else{
 						turno = 1;
 					}
-				juego.mark(jugada.posTablero);
-				
-			
-		
-				if ((!jugada.hayGanador()) && (!jugada.hayEmpate())) {
-					verify(conexion1).sendEvent(eq(EventType.SET_TURN), eq(jugadores.get(turnosig)));
-					verify(conexion2).sendEvent(eq(EventType.SET_TURN), eq(jugadores.get(turnosig)));
 					
+						juego.mark(jugada.posTablero);
+						
+						if ((!jugada.hayGanador()) && (!jugada.hayEmpate())) {
+							verify(conexion1).sendEvent(eq(EventType.SET_TURN), eq(jugadores.get(turnosig)));
+							verify(conexion2).sendEvent(eq(EventType.SET_TURN), eq(jugadores.get(turnosig)));
+							
+						}
+					
+						else if (jugada.hayGanador()) {
+						
+							    ArgumentCaptor<WinnerValue> ac = ArgumentCaptor.forClass(WinnerValue.class);
+						
+								verify(conexion1).sendEvent(eq(EventType.GAME_OVER), ac.capture());
+								int[] res= ac.getValue().getPos();
+								assertArrayEquals(res,jugada.lineaResult);
+								assertTrue(ac.getValue().getPlayer().getId()== turno);
+								
+								verify(conexion2).sendEvent(eq(EventType.GAME_OVER), ac.capture());
+								int[] res2= ac.getValue().getPos();
+								assertArrayEquals(res2,jugada.lineaResult);
+								assertTrue(ac.getValue().getPlayer().getId()== turno);
+								
+					}
+					    else if (jugada.hayEmpate()) {
+								ArgumentCaptor<WinnerValue> ac2 = ArgumentCaptor.forClass(WinnerValue.class);
+								
+								verify(conexion1).sendEvent(eq(EventType.GAME_OVER), ac2.capture());
+								assertNull(ac2.getValue());
+								
+								verify(conexion2).sendEvent(eq(EventType.GAME_OVER), ac2.capture());
+								assertNull(ac2.getValue());
+					}
+					if (turnosig==1){
+						turnosig = 0;
+						}
+					else{
+						turnosig = 1;
+						}
+						reset(conexion1);
+						reset(conexion2);
+					}
 				}
-			
-				else if (jugada.hayGanador()) {
-				
-				ArgumentCaptor<WinnerValue> ac = ArgumentCaptor.forClass(WinnerValue.class);
-				
-				verify(conexion1).sendEvent(eq(EventType.GAME_OVER), ac.capture());
-				int[] res= ac.getValue().getPos();
-				assertArrayEquals(res,jugada.lineaResult);
-				assertTrue(ac.getValue().getPlayer().getId()== turno);
-				
-				verify(conexion2).sendEvent(eq(EventType.GAME_OVER), ac.capture());
-				int[] res2= ac.getValue().getPos();
-				assertArrayEquals(res2,jugada.lineaResult);
-				assertTrue(ac.getValue().getPlayer().getId()== turno);
-				
-			}
-			else if (jugada.hayEmpate()) {
-				ArgumentCaptor<WinnerValue> ac2 = ArgumentCaptor.forClass(WinnerValue.class);
-				
-				verify(conexion1).sendEvent(eq(EventType.GAME_OVER), ac2.capture());
-				assertNull(ac2.getValue());
-				
-				verify(conexion2).sendEvent(eq(EventType.GAME_OVER), ac2.capture());
-				assertNull(ac2.getValue());
-			}
-				if (turnosig==1){
-					turnosig = 0;
-				}
-				else{
-					turnosig = 1;
-				}
-				reset(conexion1);
-				reset(conexion2);
-	
-			}
-		}
 	 public static Collection<Object[]> values() {
 			CasosPartida casos = new CasosPartida();
 			 Object[][] values = {
@@ -145,21 +144,3 @@ public class TicTacToeGameTest {
 				
 		
 	}
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-

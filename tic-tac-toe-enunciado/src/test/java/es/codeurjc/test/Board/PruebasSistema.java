@@ -66,7 +66,7 @@ public class PruebasSistema {
 		}
 	}
 	
-	@ParameterizedTest
+	@ParameterizedTest(name = "CasoPartida: {index}")
 	 @MethodSource("values")
 	public void TestGenericoWeb(List<Jugada> jugadas) throws InterruptedException{
 		for (WebDriver dr: listadrivers) {
@@ -89,31 +89,31 @@ public class PruebasSistema {
 				turno = 1;
 			}
 		
-		listadriverswaits.get(turno).until(ExpectedConditions.elementToBeClickable(By.id("cell-" + jugada.posTablero)));
-		listadrivers.get(turno).findElement(By.id("cell-" + jugada.posTablero)).click();
-		
-		if (jugada.hayGanador()) {
-			listadriverswaits.get(turno).until(ExpectedConditions.alertIsPresent());
-			listadriverswaits.get(turnosig).until(ExpectedConditions.alertIsPresent());
-			String res=listadrivers.get(turno).switchTo().alert().getText();
-			String expected= jugada.nombre + " wins! " + jugadas.get(turnosig).nombre + " looses.";
-			assertEquals(res,expected);
+				listadriverswaits.get(turno).until(ExpectedConditions.elementToBeClickable(By.id("cell-" + jugada.posTablero)));
+				listadrivers.get(turno).findElement(By.id("cell-" + jugada.posTablero)).click();
 				
-		} else if (jugada.hayEmpate()) {
-			listadriverswaits.get(turno).until(ExpectedConditions.alertIsPresent());
-			listadriverswaits.get(turnosig).until(ExpectedConditions.alertIsPresent());
-			String res=listadrivers.get(turno).switchTo().alert().getText();
-			String expected= "Draw!";
-			assertEquals(res,expected);
-		}
-		if (turnosig==1){
-			turnosig = 0;
-		}
-		else{
-			turnosig = 1;
-		}
-		}
-	}
+				if (jugada.hayGanador()) {
+					listadriverswaits.get(turno).until(ExpectedConditions.alertIsPresent());
+					listadriverswaits.get(turnosig).until(ExpectedConditions.alertIsPresent());
+					String res=listadrivers.get(turno).switchTo().alert().getText();
+					String expected= jugada.nombre + " wins! " + jugadas.get(turnosig).nombre + " looses.";
+					assertEquals(res,expected);
+						
+				} else if (jugada.hayEmpate()) {
+					listadriverswaits.get(turno).until(ExpectedConditions.alertIsPresent());
+					listadriverswaits.get(turnosig).until(ExpectedConditions.alertIsPresent());
+					String res=listadrivers.get(turno).switchTo().alert().getText();
+					String expected= "Draw!";
+					assertEquals(res,expected);
+				}
+				if (turnosig==1){
+					turnosig = 0;
+				}
+				else{
+					turnosig = 1;
+				}
+				}
+			}
 	
 	 public static Collection<Object[]> values() {
 			CasosPartida casos = new CasosPartida();
